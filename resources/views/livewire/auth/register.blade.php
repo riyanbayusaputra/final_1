@@ -80,7 +80,7 @@
                   
                     <label class="block text-sm font-medium text-gray-700 mb-1">No Telepon</label>
                     <div class="mt-1">
-                        <input type="text" 
+                        <input type="tel" 
                             wire:model.lazy="no_telepon"
                             placeholder="Masukkan no telepon anda" 
                             class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-primary">
@@ -90,8 +90,12 @@
                     @enderror
                 </div>
 
-                <button type="submit" class="w-full bg-primary text-white py-3 rounded-xl font-medium hover:bg-primary/90 transition-colors">
-                    Register Now
+                <button type="submit" 
+                    wire:loading.attr="disabled" 
+                    wire:target="register"
+                    class="w-full bg-primary text-white py-3 rounded-xl font-medium hover:bg-primary/90 transition-colors disabled:opacity-50">
+                    <span wire:loading.remove wire:target="register">Register</span>
+                    <span wire:loading wire:target="register" style="display: none;">Memproses...</span>
                 </button>
                 
 

@@ -50,16 +50,7 @@ class Checkout extends Component
     public $selected_kabupaten = '';
     public $selected_kecamatan = '';
 
-    protected $rules = [
-        'shippingData.recipient_name' => 'required|min:3',
-        'shippingData.phone' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/|min:10',
-        'shippingData.shipping_address' => 'required|min:5',
-        'shippingData.delivery_date' => 'required',
-        'shippingData.delivery_time' => 'required',
-        'selected_provinsi' => 'required',
-        'selected_kabupaten' => 'required',
-    ];
-
+    
     protected function rules()
     {
         $rules = [

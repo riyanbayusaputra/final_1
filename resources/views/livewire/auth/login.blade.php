@@ -10,7 +10,7 @@
             </div>
 
             <!-- Login Form -->
-            <form wire:submit.prevenr="login" class="space-y-4">
+            <form wire:submit.prevent="login" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
                     <div class="mt-1">
@@ -65,8 +65,12 @@
                     <a href="#" class="text-sm text-primary hover:underline">Lupa password?</a>
                 </div> -->
 
-                <button type="submit" class="w-full bg-primary text-white py-3 rounded-xl font-medium hover:bg-primary/90 transition-colors">
-                    Login
+                <button type="submit" 
+                    wire:loading.attr="disabled" 
+                    wire:target="login"
+                    class="w-full bg-primary text-white py-3 rounded-xl font-medium hover:bg-primary/90 transition-colors disabled:opacity-50">
+                    <span wire:loading.remove wire:target="login">Login</span>
+                    <span wire:loading wire:target="login" style="display: none;">Memproses...</span>
                 </button>
 
                 <p class="text-center text-sm text-gray-600">

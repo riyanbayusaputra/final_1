@@ -42,26 +42,44 @@ class Login extends Component
 
     public function login()
     {
+        // Prevent double submission
         $this->validate();
 
+        // Disable form while processing
         if (Auth::attempt(['email' => $this->email, 'password' => $this->password])) {
             session()->regenerate();
-
+            
             $user = Auth::user();
 
-            // Memeriksa apakah pengguna memiliki role 'admin' atau 'super_admin'
-        if ($user->hasRole('admin') || $user->hasRole('super_admin')) {
-            return redirect()->intended('/admin');
+            // Dispatch event untuk success message
+            $this->dispatch('login-success', [
+                'message' => 'Login berhasil! Selamat datang, ' . $user->name
+            ]);
+
+            // Tentukan route tujuan
+            $redirectRoute = ($user->hasRole('admin') || $user->hasRole('super_admin')) 
+                ? '/admin' 
+                : route('home');
+
+            // Delay redirect untuk menampilkan alert dulu
+            $this->js("
+                setTimeout(() => {
+                    window.location.href = '$redirectRoute';
+                }, 2000);
+            ");
+
+            return;
         }
 
-            return redirect()->intended(route('home'));
-        }
-
+        // Dispatch event untuk error message
+        $this->dispatch('login-error', [
+            'message' => 'Email atau password salah. Silakan coba lagi.'
+        ]);
+        
         $this->addError('email', 'Email atau password salah');
         $this->password = '';
     }
 
-    
     public function render()
     {
         return view('livewire.auth.login')

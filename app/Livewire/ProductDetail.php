@@ -29,9 +29,14 @@ class ProductDetail extends Component
     
     public function addToCart($productId)
     {
+        
         if (!auth()->check()) {
             return redirect()->route('login');
         }
+
+        // if (!auth()->user()->hasVerifiedEmail()) {
+        //     return redirect()->route('verification.notice');
+        // }
 
         try {
             $cart = Cart::where('user_id', auth()->id())

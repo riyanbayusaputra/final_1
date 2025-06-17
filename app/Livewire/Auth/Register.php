@@ -28,10 +28,14 @@ class Register extends Component
     protected $rules = [
         'name' => 'required|min:3',
         'email' => 'required|email|unique:users',
-        'password' => 'required|min:8|confirmed', // Pastikan password dan konfirmasi harus sama
-        'no_telepon' => 'nullable|numeric', // Tambahkan validasi untuk nomor telepon jika diperlukan
-
-
+        'password' => 'required|min:8|confirmed',
+        'no_telepon' => [
+            'required',
+            'min:10',
+         
+            'numeric',
+            'regex:/^08[0-9]{8,13}$/'
+        ],
     ];
 
     protected $messages = [
@@ -74,8 +78,12 @@ class Register extends Component
             'name' => $validateData['name'],
             'email' => $validateData['email'],
             'password' => Hash::make($validateData['password']),
-            'no_telepon' => $validateData['no_telepon'] ?? null, // Pastikan no_telepon bisa null
-         
+            'no_telepon' => $validateData['no_telepon'] ?? null,
+        ]);
+
+        $this->dispatch('alert', [
+            'type' => 'success',
+            'message' => '🎉 Pendaftaran berhasil! Silakan login.'
         ]);
 
         event(new Registered($user));
