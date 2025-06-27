@@ -25,7 +25,7 @@ class EditProfile extends Component
             'name' => 'required|string|max:255',
             'email' => ['required', 'email', Rule::unique('users', 'email')->ignore(auth()->id())],
             'password' => 'nullable|min:6|confirmed',
-            'no_telepon' => 'nullable|numeric|min:10|max:15', // Validasi nomor telepon
+            'no_telepon' => 'nullable|numeric|min:10|', // Validasi nomor telepon
         ];
     }
 

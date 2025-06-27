@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('stores', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name', 50);
             $table->text('description')->nullable();
-            $table->string('image')->nullable();
-            $table->string('banner')->nullable();
-            $table->string('whatsapp');
-            $table->string('email_notification')->nullable();
+            $table->string('image', 50)->nullable();
+            $table->string('banner', 50)->nullable();
+            $table->string('whatsapp', 20);
+            $table->string('email_notification', 50)->nullable();
             $table->boolean('is_use_payment_gateway')->default(false);
             $table->timestamps();
         });

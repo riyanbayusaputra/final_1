@@ -249,7 +249,7 @@ class OrderResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-     
+            
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

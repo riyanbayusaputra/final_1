@@ -32,6 +32,11 @@ class UserResource extends Resource
                     ->email()
                     ->required()
                     ->maxLength(255),
+                Forms\Components\TextInput::make('no_telepon')
+                    ->tel()
+                    ->maxLength(15)
+                    ->label('No Telepon'),
+            
                 Forms\Components\DateTimePicker::make('email_verified_at'),
                 Forms\Components\TextInput::make('password')
                     ->password()
@@ -41,7 +46,7 @@ class UserResource extends Resource
                     ->multiple()
                     ->relationship('roles', 'name')
                     ->preload()
-                    ->required()
+               
                     ->searchable()
                     ->label('Roles'),
                
@@ -78,6 +83,8 @@ class UserResource extends Resource
                 //
             ])
             ->actions([
+                //delete
+                Tables\Actions\DeleteAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([

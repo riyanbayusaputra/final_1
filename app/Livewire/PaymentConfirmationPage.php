@@ -15,7 +15,7 @@ class PaymentConfirmationPage extends Component
     public $payment_proof;
 
     protected $rules = [
-        'payment_proof' => 'required|image',
+        'payment_proof' => 'required|image|max:2048', // max 2MB
     ];
 
     protected $messages = [
@@ -29,11 +29,12 @@ class PaymentConfirmationPage extends Component
         $this->order = Order::where('order_number', $orderNumber)->firstOrFail();
     }
 
-    public function updatedPaymentProof()
-    {
-        $this->validate([
-            'payment_proof' => 'image|'
-        ]);
+   public function updatedPaymentProof()
+{
+    $this->validate([
+        'payment_proof' => 'image|max:2048',
+    ]);
+
     }
 
     public function submit()
@@ -49,10 +50,13 @@ class PaymentConfirmationPage extends Component
                 'payment_proof' => $imagePath,
             ]);
 
+            // Dispatch alert for successful upload
             $this->dispatch('showAlert', [
                 'message' => 'Bukti pembayaran berhasil diunggah',
                 'type' => 'success'
             ]);
+
+           
 
             return redirect()->route('orders');
 

@@ -300,6 +300,8 @@ class Checkout extends Component
 
                 Cart::where('user_id', auth()->id())->delete();
 
+                
+
                 try {
                     Notification::route('mail', $this->store->email_notification)
                         ->notify(new NewOrderNotification($order));
