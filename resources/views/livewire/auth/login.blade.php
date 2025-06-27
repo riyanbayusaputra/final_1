@@ -57,13 +57,13 @@
                 </div>
                 
 
-                <!-- <div class="flex items-center justify-between">
+              <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <input type="checkbox" id="remember" class="rounded border-gray-300 text-primary focus:ring-primary">
                         <label for="remember" class="ml-2 text-sm text-gray-600">Ingat saya</label>
                     </div>
-                    <a href="#" class="text-sm text-primary hover:underline">Lupa password?</a>
-                </div> -->
+                    <a href="{{ route('password.request') }}" class="text-sm text-primary hover:underline">Lupa password?</a>
+                </div> 
 
                 <button type="submit" 
                     wire:loading.attr="disabled" 

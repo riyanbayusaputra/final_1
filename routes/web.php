@@ -16,6 +16,8 @@ use App\Livewire\GenerateInvoice;
 
 use App\Services\MidtransService;
 use App\Livewire\ProductCustomMenu;
+use App\Livewire\Auth\ResetPassword;
+use App\Livewire\Auth\ForgotPassword;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\PaymentConfirmationPage;
 
@@ -24,8 +26,8 @@ Route::get('/product/{slug}', ProductDetail::class)->name('product.detail');
 
 
 
-
-
+Route::get('/reset-password/{token}', ResetPassword::class)->middleware('guest')->name('password.reset');
+Route::get('/forgot-password', ForgotPassword::class)->name('password.request');
 
 Route::middleware('guest')->group(function () {
     Route::get('login', Login::class)->name('login');

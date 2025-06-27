@@ -111,6 +111,7 @@ class OrderResource extends Resource
                 ->formatStateUsing(fn ($state) => json_decode($state, true) ? implode(', ', json_decode($state, true)) : '-')
                 ->disabled()
                 ->dehydrated(false),
+                
                 // Forms\Components\TextInput::make('custom_options_json')
                 // ->label('Pilihan Custom (JSON)')
                 // ->disabled()
