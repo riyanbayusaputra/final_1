@@ -152,7 +152,7 @@ class OrderResource extends Resource
                 ]),
                 Forms\Components\Section::make('Status Order')->schema([
                     // URL Pembayaran Gateway - tampil jika ada transaction ID (transaksi via gateway)
-                    Forms\Components\TextInput::make('payment_gateway_transaction_id')
+                    Forms\Components\TextInput::make('bukti_url')
                         ->label('Url Pembayaran')
                         ->disabled()
                         ->visible(function ($record) {
