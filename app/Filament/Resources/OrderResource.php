@@ -151,21 +151,25 @@ class OrderResource extends Resource
                         ->default(0),
                 ]),
                 Forms\Components\Section::make('Status Order')->schema([
+                    // URL Pembayaran Gateway - tampil jika ada transaction ID (transaksi via gateway)
                     Forms\Components\TextInput::make('payment_gateway_transaction_id')
                         ->label('Url Pembayaran')
                         ->disabled()
-                        ->visible(fn () => Store::first()->is_use_payment_gateway == true),
+                        ->visible(function ($record) {
+                            return $record && !empty($record->payment_gateway_transaction_id);
+                        }),
+                    
+                    // Bukti Pembayaran Manual - tampil jika ada payment proof (transaksi manual)
                     Forms\Components\FileUpload::make('payment_proof')
                         ->label('Bukti Pembayaran')
                         ->image()
                         ->disk('public')
                         ->directory('payment-proofs')
-                        ->visible(fn ($record) =>
-                            $record?->payment_gateway_transaction_id == null &&
-                            Store::first()->is_use_payment_gateway == false &&
-                            $record?->payment_proof !== null
-                        )
+                        ->visible(function ($record) {
+                            return $record && !empty($record->payment_proof);
+                        })
                         ->disabled(),
+                    
                     Forms\Components\Select::make('payment_status')
                         ->label('Status Pembayaran')
                         ->options([
