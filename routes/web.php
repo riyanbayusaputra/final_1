@@ -21,6 +21,7 @@ use App\Livewire\Auth\ForgotPassword;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\PaymentConfirmationPage;
 
+
 Route::get('/', StoreShow::class)->name('home');
 Route::get('/product/{slug}', ProductDetail::class)->name('product.detail');
 

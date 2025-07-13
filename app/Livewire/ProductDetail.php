@@ -30,7 +30,11 @@ class ProductDetail extends Component
     public function addToCart($productId)
     {
         
-        if (!auth()->check()) {
+       if (!auth()->check()) {
+            $this->dispatch('showAlert', [
+            'message' => 'Silakan login terlebih dahulu untuk melihat keranjang.',
+            'type' => 'error'
+            ]);
             return redirect()->route('login');
         }
 
