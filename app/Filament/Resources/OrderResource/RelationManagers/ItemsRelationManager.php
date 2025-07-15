@@ -18,7 +18,18 @@ class ItemsRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                
+                Forms\Components\TextInput::make('product_name')
+                    ->required(),
+                Forms\Components\TextInput::make('price')
+                    ->numeric()
+                    ->required(),
+               Forms\Components\RichEditor::make('product_description')
+                ->label('Product Description')
+    
+                ->required(),
+                Forms\Components\TextInput::make('quantity')
+                    ->numeric()
+                    ->required(),
             ]);
     }
 
@@ -27,22 +38,34 @@ class ItemsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('product_name')
             ->columns([
-                Tables\Columns\ImageColumn::make('product.first_image_url'),
-                Tables\Columns\TextColumn::make('product_name'),
-                Tables\Columns\TextColumn::make('price'),
-                Tables\Columns\TextColumn::make('quantity'),
+                Tables\Columns\ImageColumn::make('product.first_image_url')
+                    ->label('Gambar Produk'),
+                Tables\Columns\TextColumn::make('product_name')
+                    ->label('Nama Produk')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('price')
+                    ->label('Harga satuan')
+                    ->formatStateUsing(fn ($state) => (string) ((int) $state)),
+                Tables\Columns\TextColumn::make('product_description')
+                    ->label('Deskripsi Produk')
+                    ->html()
+                    ->limit(50)
+                    ->searchable(), 
+                Tables\Columns\TextColumn::make('quantity')
+                    ->label('Jumlah'),
             ])
             ->filters([
-                //
+                // Add filters if needed
             ])
             ->headerActions([
-                
+                // Tables\Actions\CreateAction::make(),
             ])
             ->actions([
-                
+                Tables\Actions\ViewAction::make(),
+             
             ])
             ->bulkActions([
-                
+          
             ]);
     }
 }

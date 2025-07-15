@@ -21,206 +21,361 @@ use App\Filament\Resources\OrderResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\OrderResource\RelationManagers;
 
+/**
+ * OrderResource - Resource untuk mengelola pesanan
+ * 
+ * Resource ini mengatur tampilan dan pengelolaan data pesanan
+ * di dalam admin panel Filament dengan fitur lengkap
+ */
 class OrderResource extends Resource
 {
+    // Model yang digunakan
     protected static ?string $model = Order::class;
+    
+    // Icon di sidebar navigasi
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
+    
+    // Urutan di sidebar
     protected static ?int $navigationSort = 6;
+    
+    // Label navigasi
+    protected static ?string $navigationLabel = 'Orders';
+    
+    // Label jamak
+    protected static ?string $pluralModelLabel = 'Orders';
 
+    /**
+     * Form untuk create/edit pesanan
+     */
     public static function form(Form $form): Form
     {
         return $form->schema([
+            // === KOLOM KIRI ===
             Forms\Components\Group::make()->schema([
-                Forms\Components\Section::make('Informasi Umum')->schema([
-                    Forms\Components\TextInput::make('order_number')
-                        ->label('No. Pesanan')
-                        ->disabled(),
-                    Forms\Components\TextInput::make('created_at')
-                        ->label('Tanggal Pesan')
-                        ->disabled()
-                        ->formatStateUsing(fn ($state) => Carbon::parse($state)->format('d M Y H:i')),
-                    Forms\Components\Select::make('user_id')
-                        ->relationship('user', 'name')
-                        ->disabled(),
-                ]),
-                Forms\Components\Section::make('Informasi User')->schema([
-                    Forms\Components\TextInput::make('user.email')
-                        ->label('Email User')
-                        ->formatStateUsing(fn ($record, $state) => $record->user?->email ?? '-')
-                        ->disabled(),
-                    Forms\Components\TextInput::make('user.name')
-                        ->label('Nama User')
-                        ->formatStateUsing(fn ($record, $state) => $record->user?->name ?? '-')
-                        ->disabled(),
-                ]),
-
-                Forms\Components\Section::make('Penerima')->schema([
-                    Forms\Components\TextInput::make('recipient_name')
-                        ->label('Nama Penerima')
-                        ->disabled(),
-                    Forms\Components\TextInput::make('phone')
-                        ->label('No. Telepon')
-                        ->tel()
-                        ->disabled(),
-                    Forms\Components\RichEditor::make('shipping_address')
-                        ->label('Alamat Pengiriman')
-                        ->toolbarButtons(['bold', 'italic', 'bulletList', 'orderedList', 'link'])
-                        ->disabled(),
-                    Forms\Components\TextInput::make('provinsi_name')
-                        ->label('Provinsi')
-                        ->disabled(),
-                    Forms\Components\TextInput::make('kabupaten_name')
-                        ->label('Kabupaten')
-                        ->disabled(),
-                    Forms\Components\TextInput::make('kecamatan_name')
-                        ->label('Kecamatan')
-                        ->disabled(),
-                    Forms\Components\RichEditor::make('noted')
-                        ->label('Catatan')
-                        ->toolbarButtons(['bold', 'italic', 'bulletList', 'orderedList', 'link'])
-                        ->disabled(),
-                    Forms\Components\TextInput::make('delivery_date')
-                        ->label('Tanggal')
-                        ->disabled(),
-                    Forms\Components\TextInput::make('delivery_time')
-                        ->label('Waktu pemakaian/pengiriman')
-                        ->disabled(),
-                ]),
-                Forms\Components\Section::make('Produk Dipesan')->schema([
-                    Forms\Components\Repeater::make('items')
-                        ->relationship()
-                        ->schema([
-                            Forms\Components\TextInput::make('product_name')
-                                ->label('Nama Produk')
-                                ->disabled(),
-                            Forms\Components\TextInput::make('quantity')
-                                ->label('Jumlah')
-                                ->disabled(),
-                            Forms\Components\TextInput::make('price')
-                                ->label('Harga Satuan')
-                                ->numeric()
-                                ->disabled(),
-                        
-                        ])
-                        ->disabled()
-                        ->columns(3)
-                        ->columnSpan('full'),
-                ]),
-                Forms\Components\Textarea::make('custom_options_json')
-                ->label('Pilihan Custom  ganti isi menu')
-                ->formatStateUsing(fn ($state) => json_decode($state, true) ? implode(', ', json_decode($state, true)) : '-')
-                ->disabled()
-                ->dehydrated(false),
                 
-       
-                ]),
-            
-
-
-            Forms\Components\Group::make()->schema([
-                Forms\Components\Section::make('Detail Harga')->schema([
-                    Forms\Components\TextInput::make('subtotal')
-                        ->disabled()
-                        ->numeric()
-                        ->default(0),
-                    Forms\Components\TextInput::make('shipping_cost')
-                        ->label('Biaya Pengiriman')
-                        ->disabled(fn (Forms\Get $get) => $get('payment_status') == OrderStatusService::PAYMENT_PAID)
-                        ->numeric(),
-                    Forms\Components\TextInput::make('price_adjustment')
-                        ->label('Biaya tambahan ketika custom')
-                        ->disabled(fn (Forms\Get $get) => !$get('is_custom_catering'))
-                        ->numeric(),
-                    Forms\Components\TextInput::make('total_amount')
-                        ->label('Total Pembayaran')
-                        ->disabled()
-                        ->numeric()
-                        ->default(0),
-                ]),
-                Forms\Components\Section::make('Status Order')->schema([
-                    // URL Pembayaran Gateway - tampil jika ada transaction ID (transaksi via gateway)
-                    Forms\Components\TextInput::make('payment_gateway_transaction_id')
-                        ->label('Url Pembayaran')
-                        ->disabled()
-                        ->visible(function ($record) {
-                            return $record && !empty($record->payment_gateway_transaction_id);
-                        }),
-                    
-                    // Bukti Pembayaran Manual - tampil jika ada payment proof (transaksi manual)
-                    Forms\Components\FileUpload::make('payment_proof')
-                        ->label('Bukti Pembayaran')
-                        ->image()
-                        ->disk('public')
-                        ->directory('payment-proofs')
-                        ->visible(function ($record) {
-                            return $record && !empty($record->payment_proof);
-                        })
-                        ->disabled(),
-                    
-                    Forms\Components\Select::make('payment_status')
-                        ->label('Status Pembayaran')
-                        ->options([
-                            OrderStatusService::PAYMENT_UNPAID => OrderStatusService::getPaymentStatusLabel(OrderStatusService::PAYMENT_UNPAID),
-                            OrderStatusService::PAYMENT_PAID => OrderStatusService::getPaymentStatusLabel(OrderStatusService::PAYMENT_PAID),
-                        ])
-                        ->required()
-                        ->live()
-                        ->disabled(fn ($record) => $record?->snap_token != null),
-                    Forms\Components\Select::make('status')
-                        ->label('Status')
-                        ->options([
-                            OrderStatusService::STATUS_CHECKING => OrderStatusService::getStatusLabel(OrderStatusService::STATUS_CHECKING),
-                            OrderStatusService::STATUS_PENDING => OrderStatusService::getStatusLabel(OrderStatusService::STATUS_PENDING),
-                            OrderStatusService::STATUS_PROCESSING => OrderStatusService::getStatusLabel(OrderStatusService::STATUS_PROCESSING),
-                            OrderStatusService::STATUS_SHIPPED => OrderStatusService::getStatusLabel(OrderStatusService::STATUS_SHIPPED),
-                            OrderStatusService::STATUS_COMPLETED => OrderStatusService::getStatusLabel(OrderStatusService::STATUS_COMPLETED),
-                            OrderStatusService::STATUS_CANCELLED => OrderStatusService::getStatusLabel(OrderStatusService::STATUS_CANCELLED),
-                        ])
-                        ->required()
-                        ->live(),
-                ]),
-                Forms\Components\Repeater::make('customCatering')
-                    ->relationship()
+                // --- SECTION: INFORMASI UMUM ---
+                Forms\Components\Section::make('Informasi Umum')
+                    ->description('Data dasar pesanan')
                     ->schema([
-                        Forms\Components\TextInput::make('menu_description')
-                            ->label('Deskripsi Menu'),
+                        Forms\Components\TextInput::make('order_number')
+                            ->label('No. Pesanan')
+                            ->disabled()
+                            ->helperText('Nomor pesanan otomatis dari sistem'),
+                            
+                        Forms\Components\TextInput::make('created_at')
+                            ->label('Tanggal Pesan')
+                            ->disabled()
+                            ->formatStateUsing(fn ($state) => Carbon::parse($state)->format('d M Y H:i'))
+                            ->helperText('Kapan pesanan dibuat'),
+                            
+                        Forms\Components\Select::make('user_id')
+                            ->label('Pemesan')
+                            ->relationship('user', 'name')
+                            ->disabled()
+                            ->helperText('User yang melakukan pemesanan'),
+                    ]),
+
+                // --- SECTION: INFORMASI USER ---
+                Forms\Components\Section::make('Informasi User')
+                    ->description('Data lengkap user pemesan')
+                    ->schema([
+                        Forms\Components\TextInput::make('user.email')
+                            ->label('Email User')
+                            ->formatStateUsing(fn ($record) => $record?->user?->email ?? '-')
+                            ->disabled()
+                            ->helperText('Email user yang terdaftar'),
+                            
+                        Forms\Components\TextInput::make('user.name')
+                            ->label('Nama User')
+                            ->formatStateUsing(fn ($record) => $record?->user?->name ?? '-')
+                            ->disabled()
+                            ->helperText('Nama lengkap user'),
+                    ]),
+
+                // --- SECTION: DATA PENERIMA ---
+                Forms\Components\Section::make('Data Penerima')
+                    ->description('Informasi lengkap penerima barang')
+                    ->schema([
+                        Forms\Components\TextInput::make('recipient_name')
+                            ->label('Nama Penerima')
+                            ->disabled()
+                            ->helperText('Nama yang akan menerima barang'),
+                            
+                        Forms\Components\TextInput::make('phone')
+                            ->label('No. Telepon')
+                            ->tel()
+                            ->disabled()
+                            ->helperText('Nomor telepon yang bisa dihubungi'),
+                            
+                        Forms\Components\RichEditor::make('shipping_address')
+                            ->label('Alamat Pengiriman')
+                            ->toolbarButtons(['bold', 'italic', 'bulletList', 'orderedList', 'link'])
+                            ->disabled()
+                            ->helperText('Alamat lengkap untuk pengiriman'),
+                            
+                        Forms\Components\Grid::make(3)->schema([
+                            Forms\Components\TextInput::make('provinsi_name')
+                                ->label('Provinsi')
+                                ->disabled(),
+                                
+                            Forms\Components\TextInput::make('kabupaten_name')
+                                ->label('Kabupaten')
+                                ->disabled(),
+                                
+                            Forms\Components\TextInput::make('kecamatan_name')
+                                ->label('Kecamatan')
+                                ->disabled(),
+                        ]),
+                        
+                        Forms\Components\RichEditor::make('noted')
+                            ->label('Catatan Khusus')
+                            ->toolbarButtons(['bold', 'italic', 'bulletList', 'orderedList', 'link'])
+                            ->disabled()
+                            ->helperText('Catatan khusus dari customer'),
+                            
+                        Forms\Components\Grid::make(2)->schema([
+                            Forms\Components\TextInput::make('delivery_date')
+                                ->label('Tanggal Pengiriman')
+                                ->disabled()
+                                ->helperText('Tanggal yang diinginkan'),
+                                
+                            Forms\Components\TextInput::make('delivery_time')
+                                ->label('Waktu Pengiriman')
+                                ->disabled()
+                                ->helperText('Waktu pengiriman yang diinginkan'),
+                        ]),
+                    ]),
+
+                // --- SECTION: PRODUK YANG DIPESAN ---
+                Forms\Components\Section::make('Produk yang Dipesan')
+                    ->description('Daftar produk dalam pesanan ini')
+                    ->schema([
+                        Forms\Components\Repeater::make('items')
+                            ->label('Item Pesanan')
+                            ->relationship()
+                            ->schema([
+                                Forms\Components\TextInput::make('product_name')
+                                    ->label('Nama Produk')
+                                    ->disabled()
+                                    ->columnSpan(2),
+                                    
+                                Forms\Components\TextInput::make('quantity')
+                                    ->label('Jumlah')
+                                    ->disabled()
+                                    ->numeric()
+                                    ->suffix('pcs'),
+                                    
+                                Forms\Components\TextInput::make('price')
+                                    ->label('Harga Satuan')
+                                    ->disabled()
+                                    ->numeric()
+                                    ->prefix('Rp ')
+                                    ->formatStateUsing(fn ($state) => number_format($state ?? 0, 0, ',', '.')),
+                            ])
+                            ->disabled()
+                            ->columns(4)
+                            ->columnSpan('full')
+                            ->collapsible(),
+                    ]),
+
+                // --- SECTION: CUSTOM OPTIONS ---
+                Forms\Components\Section::make('Pilihan Custom')
+                    ->description('isi Menu custom yang dipilih customer')
+                    ->schema([
+                        Forms\Components\Textarea::make('custom_options_json')
+                            ->label('Pilihan isi Menu Custom')
+                            ->formatStateUsing(function ($state) {
+                                if (!$state) return '-';
+                                $decoded = json_decode($state, true);
+                                return $decoded ? implode(', ', $decoded) : '-';
+                            })
+                            ->disabled()
+                            ->rows(3)
+                            ->helperText('Menu custom yang dipilih customer'),
                     ])
-                    ->disableItemCreation()
-                    ->disableItemDeletion()
-                    ->disabled()
+                    ->visible(fn ($record) => !empty($record?->custom_options_json)),
+
+                // --- SECTION: CUSTOM CATERING ---
+                Forms\Components\Section::make('Custom Catering')
+                    ->description('Detail tambahan pesanan catering')
+                    ->schema([
+                        Forms\Components\Repeater::make('customCatering')
+                            ->label('tambahan pesanan')
+                            ->relationship()
+                            ->schema([
+                                Forms\Components\Textarea::make('menu_description')
+                                    ->label('Deskripsi')
+                                    ->disabled()
+                                    ->rows(2),
+                            ])
+                            ->disableItemCreation()
+                            ->disableItemDeletion()
+                            ->disabled()
+                            ->collapsible(),
+                    ])
                     ->visible(fn ($record) => $record?->is_custom_catering == true),
-            ]),
-        ]);
+            ])
+            ->columnSpan(['lg' => 2]), // Kolom kiri lebih lebar
+
+            // === KOLOM KANAN ===
+            Forms\Components\Group::make()->schema([
+                
+                // --- SECTION: DETAIL HARGA ---
+                Forms\Components\Section::make('Detail Harga')
+                    ->description('Rincian biaya pesanan')
+                    ->schema([
+                        Forms\Components\TextInput::make('subtotal')
+                            ->label('Subtotal')
+                            ->disabled()
+                            ->numeric()
+                            ->prefix('Rp ')
+                            ->formatStateUsing(fn ($state) => number_format($state ?? 0, 0, ',', '.'))
+                            ->helperText('Total harga produk'),
+                            
+                        Forms\Components\TextInput::make('shipping_cost')
+                            ->label('Biaya Pengiriman')
+                            ->disabled(fn (Forms\Get $get) => $get('payment_status') == OrderStatusService::PAYMENT_PAID)
+                            ->numeric()
+                            ->prefix('Rp ')
+                            ->formatStateUsing(fn ($state) => number_format($state ?? 0, 0, ',', '.'))
+                            ->helperText('Ongkos kirim'),
+                            
+                        Forms\Components\TextInput::make('price_adjustment')
+                            ->label('Biaya Tambahan')
+                            ->disabled(fn (Forms\Get $get) => !$get('is_custom_catering'))
+                            ->numeric()
+                            ->prefix('Rp ')
+                            ->formatStateUsing(fn ($state) => number_format($state ?? 0, 0, ',', '.'))
+                            ->helperText('Biaya tambahan untuk custom catering'),
+                            
+                        Forms\Components\TextInput::make('total_amount')
+                            ->label('Total Pembayaran')
+                            ->disabled()
+                            ->numeric()
+                            ->prefix('Rp ')
+                            ->formatStateUsing(fn ($state) => number_format($state ?? 0, 0, ',', '.'))
+                            ->helperText('Total yang harus dibayar')
+                            ->extraAttributes(['class' => 'font-bold text-lg']),
+                    ]),
+
+                // --- SECTION: STATUS & PEMBAYARAN ---
+                Forms\Components\Section::make('Status & Pembayaran')
+                    ->description('Informasi pembayaran dan status pesanan')
+                    ->schema([
+                        // URL Pembayaran Gateway
+                        Forms\Components\TextInput::make('payment_gateway_transaction_id')
+                            ->label('URL Pembayaran Gateway')
+                            ->disabled()
+                            ->visible(fn ($record) => $record && !empty($record->payment_gateway_transaction_id))
+                            ->helperText('Link pembayaran online'),
+                        
+                        // Bukti Pembayaran Manual
+                        Forms\Components\FileUpload::make('payment_proof')
+                            ->label('Bukti Pembayaran')
+                            ->image()
+                            ->disk('public')
+                            ->directory('payment-proofs')
+                            ->visible(fn ($record) => $record && !empty($record->payment_proof))
+                            ->disabled()
+                            ->helperText('Bukti transfer dari customer'),
+                        
+                        // Status Pembayaran
+                        Forms\Components\Select::make('payment_status')
+                            ->label('Status Pembayaran')
+                            ->options([
+                                OrderStatusService::PAYMENT_UNPAID => 'Belum Dibayar',
+                                OrderStatusService::PAYMENT_PAID => 'Sudah Dibayar',
+                            ])
+                            ->required()
+                            ->live()
+                            ->disabled(fn ($record) => $record?->snap_token != null)
+                            ->helperText('Status pembayaran saat ini')
+                            ->afterStateUpdated(function ($state, Forms\Set $set) {
+                                // Auto update status pesanan berdasarkan pembayaran
+                                if ($state === OrderStatusService::PAYMENT_PAID) {
+                                    $set('status', OrderStatusService::STATUS_PROCESSING);
+                                }
+                            }),
+                        
+                        // Status Pesanan
+                        Forms\Components\Select::make('status')
+                            ->label('Status Pesanan')
+                            ->options([
+                                OrderStatusService::STATUS_CHECKING => 'Menunggu Konfirmasi',
+                                OrderStatusService::STATUS_PENDING => 'Menunggu Pembayaran',
+                                OrderStatusService::STATUS_PROCESSING => 'Sedang Diproses',
+                                OrderStatusService::STATUS_SHIPPED => 'Sedang Dikirim',
+                                OrderStatusService::STATUS_COMPLETED => 'Selesai',
+                                OrderStatusService::STATUS_CANCELLED => 'Dibatalkan',
+                            ])
+                            ->required()
+                            ->live()
+                            ->helperText('Status pesanan saat ini')
+                            ->afterStateUpdated(function ($state, Forms\Set $set) {
+                                // Auto update payment status jika pesanan completed
+                                if ($state === OrderStatusService::STATUS_COMPLETED) {
+                                    $set('payment_status', OrderStatusService::PAYMENT_PAID);
+                                }
+                            }),
+                    ]),
+
+             
+            ])
+            ->columnSpan(['lg' => 1]), // Kolom kanan lebih sempit
+        ])
+        ->columns(3); // Total 3 kolom grid
     }
 
+    /**
+     * Tabel untuk menampilkan daftar pesanan
+     */
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-
-                
+                // Kolom nomor pesanan dengan tanggal
                 Tables\Columns\TextColumn::make('order_number')
                     ->label('No. Pesanan')
                     ->searchable()
-                    ->description(fn (Order $record): string => $record->created_at->format('d M Y (H:i)')),
+                    ->sortable()
+                    ->copyable()
+                    ->description(fn (Order $record): string => $record->created_at->format('d M Y (H:i)'))
+                    ->weight('semibold'),
+
+                // Kolom penerima dengan nomor telepon
                 Tables\Columns\TextColumn::make('recipient_name')
                     ->label('Penerima')
                     ->searchable()
-                    ->description(fn (Order $record): string => $record->phone),
+                    ->sortable()
+                    ->description(fn (Order $record): string => $record->phone ?? '-')
+                    ->limit(30),
+
+                // Kolom total dengan format rupiah
                 Tables\Columns\TextColumn::make('total_amount')
+                    ->label('Total Harga')
                     ->formatStateUsing(fn (string $state): string => 'Rp ' . number_format($state, 0, ',', '.'))
-                    ->label('Total')
-                    ->sortable(),
+                    ->sortable()
+                    ->alignEnd()
+                    ->weight('semibold'),
+
+                // Kolom status pembayaran dengan badge
                 Tables\Columns\TextColumn::make('payment_status')
-                    ->label('Pembayaran')
+                    ->label('Status Pembayaran')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         OrderStatusService::PAYMENT_UNPAID => 'danger',
                         OrderStatusService::PAYMENT_PAID => 'success',
+                        default => 'gray',
                     })
-                    ->formatStateUsing(fn ($state) => OrderStatusService::getPaymentStatusLabel($state)),
+                    ->formatStateUsing(fn ($state) => match ($state) {
+                        OrderStatusService::PAYMENT_UNPAID => 'BELUM BAYAR',
+                        OrderStatusService::PAYMENT_PAID => 'SUDAH BAYAR',
+                        default => $state,
+                    }),
+
+                // Kolom status pesanan dengan badge berwarna
                 Tables\Columns\TextColumn::make('status')
-                    ->label('Status')
+                    ->label('Status Pesanan')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         OrderStatusService::STATUS_CHECKING => 'gray',
@@ -229,82 +384,141 @@ class OrderResource extends Resource
                         OrderStatusService::STATUS_SHIPPED => 'primary',
                         OrderStatusService::STATUS_COMPLETED => 'success',
                         OrderStatusService::STATUS_CANCELLED => 'danger',
+                        default => 'gray',
                     })
-                    ->formatStateUsing(fn ($state) => OrderStatusService::getStatusLabel($state)),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('deleted_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->formatStateUsing(fn ($state) => match ($state) {
+                        OrderStatusService::STATUS_CHECKING => 'Menunggu Konfirmasi',
+                        OrderStatusService::STATUS_PENDING => 'Menunggu Pembayaran',
+                        OrderStatusService::STATUS_PROCESSING => 'Diproses',
+                        OrderStatusService::STATUS_SHIPPED => 'Dikirim',
+                        OrderStatusService::STATUS_COMPLETED => 'Selesai',
+                        OrderStatusService::STATUS_CANCELLED => 'Dibatalkan',
+                        default => $state,
+                    }),
+
+                // Kolom terakhir update (tersembunyi default)
+             
             ])
+            
+            // === FILTER ===
             ->filters([
+                // Filter berdasarkan status pembayaran
+                Tables\Filters\SelectFilter::make('payment_status')
+                    ->label('Status Pembayaran')
+                    ->options([
+                        OrderStatusService::PAYMENT_UNPAID => 'Belum Dibayar',
+                        OrderStatusService::PAYMENT_PAID => 'Sudah Dibayar',
+                    ])
+                    ->placeholder('Semua Status Pembayaran'),
+
+                // Filter berdasarkan status pesanan
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('Status Pesanan')
+                    ->options([
+                        OrderStatusService::STATUS_CHECKING => 'Sedang Dicek',
+                        OrderStatusService::STATUS_PENDING => 'Menunggu Pembayaran',
+                        OrderStatusService::STATUS_PROCESSING => 'Sedang Diproses',
+                        OrderStatusService::STATUS_SHIPPED => 'Sedang Dikirim',
+                        OrderStatusService::STATUS_COMPLETED => 'Selesai',
+                        OrderStatusService::STATUS_CANCELLED => 'Dibatalkan',
+                    ])
+                    ->placeholder('Semua Status Pesanan'),
+
+                // Filter berdasarkan tanggal
+                Tables\Filters\Filter::make('created_at')
+                    ->label('Tanggal Pesanan')
+                    ->form([
+                        Forms\Components\DatePicker::make('created_from')
+                            ->label('Dari Tanggal'),
+                        Forms\Components\DatePicker::make('created_until')
+                            ->label('Sampai Tanggal'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    }),
+
             
             ])
+            
+            // === ACTIONS ===
             ->actions([
-                // Manual reminder button
-            // Tables\Actions\Action::make('kirim_reminder')
-            //     ->label('Kirim Reminder')
-            //     ->icon('heroicon-o-bell')
-            //     ->color('warning')
-            //     ->visible(fn ($record) => $record->payment_status == \App\Services\OrderStatusService::PAYMENT_UNPAID)
-            //     ->action(function (Order $record) {
-            //         // Send reminder email
-            //         $record->user->notify(new \App\Notifications\PaymentReminderEmail($record));
-                    
-            //         // Show success notification
-            //         \Filament\Notifications\Notification::make()
-            //             ->title('Reminder berhasil dikirim!')
-            //             ->success()
-            //             ->send();
-            //     }),
-
-              
+                // Tombol kirim invoice (hanya untuk yang sudah bayar)
                 Tables\Actions\Action::make('kirim_invoice')
                     ->label('Kirim Invoice')
                     ->icon('heroicon-o-document-text')
                     ->color('success')
-                    ->visible(fn ($record) => $record->payment_status == \App\Services\OrderStatusService::PAYMENT_PAID)
+                    ->visible(fn ($record) => $record->payment_status == OrderStatusService::PAYMENT_PAID)
+                    ->requiresConfirmation()
+                    ->modalHeading('Kirim Invoice')
+                    ->modalDescription('Invoice akan dikirim ke email customer')
+                    ->modalSubmitActionLabel('Kirim')
                     ->action(function (Order $record) {
-                        // Send invoice email
+                        // Kirim invoice via email
                         $record->user->notify(new \App\Notifications\InvoiceEmail($record));
                         
-                        // Show success notification
+                        // Tampilkan notifikasi sukses
                         \Filament\Notifications\Notification::make()
-                            ->title('Invoice berhasil dikirim!')
+                            ->title('Invoice Berhasil Dikirim!')
+                            ->body('Invoice telah dikirim ke email customer')
                             ->success()
                             ->send();
                     }),
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+
+                // Tombol lihat detail
+                Tables\Actions\ViewAction::make()
+                    ->label('Lihat')
+                    ->color('info'),
+
+                // Tombol edit
+                Tables\Actions\EditAction::make()
+                    ->label('Edit')
+                    ->color('warning'),
+
+                // Tombol hapus (hanya untuk yang belum selesai/dibatalkan)
                 Tables\Actions\DeleteAction::make()
-                    ->visible(fn ($record) => $record->status != OrderStatusService::STATUS_COMPLETED && $record->status != OrderStatusService::STATUS_CANCELLED),
-                // Tables\Actions\Action::make('generate_invoice')
-                //     ->label('Invoice')
-                //     ->icon('heroicon-o-document-text')
-                //     ->color('success')
-                //     ->requiresConfirmation()
-                //     ->visible(fn ($record) => $record->payment_status == OrderStatusService::PAYMENT_PAID)
-                //     ->action(function (Order $record) {
-                //         $pdf = app('dompdf.wrapper');
-                //         $pdf->loadView('livewire.invoice', ['order' => $record]);
-                //         return response()->streamDownload(
-                //             fn () => print($pdf->output()),
-                //             'invoice-' . $record->order_number . '.pdf',
-                //             ['Content-Type' => 'application/pdf']
-                //         );
-                //     }),
+                    ->label('Hapus')
+                    ->visible(fn ($record) => 
+                        $record->status != OrderStatusService::STATUS_COMPLETED 
+                        // $record->status != OrderStatusService::STATUS_CANCELLED
+                    )
+                    ->requiresConfirmation()
+                    ->modalHeading('Hapus Pesanan')
+                    ->modalDescription('Apakah Anda yakin ingin menghapus pesanan ini?')
+                    ->modalSubmitActionLabel('Ya, Hapus'),
             ])
+            
+            // === BULK ACTIONS ===
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->label('Hapus Terpilih')
+                        ->requiresConfirmation()
+                        ->modalHeading('Hapus Pesanan Terpilih')
+                        ->modalDescription('Apakah Anda yakin ingin menghapus pesanan yang dipilih?'),
                 ]),
             ])
-            ->defaultSort('created_at', 'desc');
+            
+            // === PENGATURAN TABEL ===
+            ->defaultSort('created_at', 'desc') // Urutkan dari yang terbaru
+            ->striped() // Baris bergaris-garis
+            ->paginated([10, 25, 50, 100]) // Opsi pagination
+            ->poll('30s') // Auto-refresh setiap 30 detik
+            ->persistSortInSession()
+            ->persistSearchInSession()
+            ->persistFiltersInSession();
     }
 
+    /**
+     * Relasi yang bisa dikelola
+     */
     public static function getRelations(): array
     {
         return [
@@ -312,11 +526,36 @@ class OrderResource extends Resource
         ];
     }
 
+    /**
+     * Halaman-halaman yang tersedia
+     */
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListOrders::route('/'),
             'create' => Pages\CreateOrder::route('/create'),
+            'view' => Pages\ViewOrder::route('/{record}'),
+            'edit' => Pages\EditOrder::route('/{record}/edit'),
         ];
+    }
+
+    /**
+     * Badge untuk navigation (jumlah pesanan)
+     */
+    public static function getNavigationBadge(): ?string
+{
+    return static::getModel()::whereNotIn('status', [
+        OrderStatusService::STATUS_COMPLETED,
+        OrderStatusService::STATUS_CANCELLED,
+    ])->count();
+}
+
+
+    /**
+     * Warna badge navigation
+     */
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return static::getModel()::count() > 50 ? 'warning' : 'primary';
     }
 }

@@ -61,6 +61,7 @@ class Checkout extends Component
             'shippingData.delivery_time' => 'required',
             'selected_provinsi' => 'required',
             'selected_kabupaten' => 'required',
+            'selected_kecamatan' => 'required', // Kecuali jika diperlukan, bisa diubah menjadi required
         ];
 
         if ($this->isCustomCatering) {
@@ -82,6 +83,7 @@ class Checkout extends Component
         'shippingData.delivery_time.required' => 'Waktu pengiriman wajib dipilih.',
         'selected_provinsi.required' => 'Provinsi wajib dipilih.',
         'selected_kabupaten.required' => 'Kabupaten/Kota wajib dipilih.',
+        'selected_kecamatan.required' => 'Kecamatan wajib dipilih.',
         'customCatering.menu_description.required' => 'Deskripsi menu wajib diisi.',
     ];
 
@@ -286,6 +288,7 @@ class Checkout extends Component
                     $order->items()->create([
                         'product_id' => $cart->product_id,
                         'product_name' => $cart->product->name,
+                        'product_description' => $cart->product->description,
                         'quantity' => $cart->quantity,
                         'price' => $cart->product->price,
                         'custom_options_json' => json_encode($names),
