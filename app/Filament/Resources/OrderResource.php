@@ -289,13 +289,13 @@ class OrderResource extends Resource
                             ->required()
                             ->live()
                             ->disabled(fn ($record) => $record?->snap_token != null)
-                            ->helperText('Status pembayaran saat ini')
-                            ->afterStateUpdated(function ($state, Forms\Set $set) {
-                                // Auto update status pesanan berdasarkan pembayaran
-                                if ($state === OrderStatusService::PAYMENT_PAID) {
-                                    $set('status', OrderStatusService::STATUS_PROCESSING);
-                                }
-                            }),
+                            ->helperText('Status pembayaran saat ini'),
+                            // ->afterStateUpdated(function ($state, Forms\Set $set) {
+                            //     // Auto update status pesanan berdasarkan pembayaran
+                            //     if ($state === OrderStatusService::PAYMENT_PAID) {
+                            //         $set('status', OrderStatusService::STATUS_PROCESSING);
+                            //     }
+                            // }),
                         
                         // Status Pesanan
                         Forms\Components\Select::make('status')
@@ -311,12 +311,12 @@ class OrderResource extends Resource
                             ->required()
                             ->live()
                             ->helperText('Status pesanan saat ini')
-                            ->afterStateUpdated(function ($state, Forms\Set $set) {
-                                // Auto update payment status jika pesanan completed
-                                if ($state === OrderStatusService::STATUS_COMPLETED) {
-                                    $set('payment_status', OrderStatusService::PAYMENT_PAID);
-                                }
-                            }),
+                            // ->afterStateUpdated(function ($state, Forms\Set $set) {
+                            //     // Auto update payment status jika pesanan completed
+                            //     if ($state === OrderStatusService::STATUS_COMPLETED) {
+                            //         $set('payment_status', OrderStatusService::PAYMENT_PAID);
+                            //     }
+                            // }),
                     ]),
 
              
@@ -471,6 +471,29 @@ class OrderResource extends Resource
                             ->success()
                             ->send();
                     }),
+
+                    //remider
+                // Tombol kirim reminder (hanya untuk yang belum bayar)
+                // Tables\Actions\Action::make('kirim_reminder')
+                //     ->label('Kirim Reminder')
+                //     ->icon('heroicon-o-bell')
+                //     ->color('warning')
+                //     ->visible(fn ($record) => $record->payment_status == OrderStatusService::PAYMENT_UNPAID)
+                //     ->requiresConfirmation()
+                //     ->modalHeading('Kirim Reminder')
+                //     ->modalDescription('Reminder akan dikirim ke email customer')
+                //     ->modalSubmitActionLabel('Kirim')
+                //     ->action(function (Order $record) {
+                //         // Kirim reminder via email
+                //         $record->user->notify(new \App\Notifications\PaymentReminderEmail($record));        
+
+                //         // Tampilkan notifikasi sukses
+                //         \Filament\Notifications\Notification::make()
+                //             ->title('Reminder Berhasil Dikirim!')
+                //             ->body('Reminder telah dikirim ke email customer')
+                //             ->success()
+                //             ->send();
+                //     }),
 
                 // Tombol lihat detail
                 Tables\Actions\ViewAction::make()
