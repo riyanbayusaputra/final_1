@@ -28,6 +28,11 @@
                             <i class="bi bi-circle-fill text-xs mr-1"></i>
                             {{$statusLabels[$order->status]}}
                         </span>
+                        {{-- <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $this->getPaymentStatusLabel($order->payment_status) }}">
+                            <i class="bi bi-circle-fill text-xs mr-1"></i>
+                            {{$paymentStatusLabels[$order->payment_status]}}    
+                        </span> --}}
+                           
                     </div>
                 </div>
                 <div>

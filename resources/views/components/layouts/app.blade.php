@@ -5,6 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $store->name ?? 'Aplikasi Pemesanan Catering Bintang rasa' }}</title>
 
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="{{ $store->description ?? 'Pesan catering dengan mudah dan cepat di Bintang Rasa. Menu lengkap, harga terjangkau, layanan terbaik.' }}">
+    <meta name="keywords" content="catering, pesan makanan, bintang rasa, menu, murah, terbaik, delivery, makanan, kuliner">
+    <meta name="author" content="Bintang Rasa">
+    <meta property="og:title" content="{{ $store->name ?? 'Aplikasi Pemesanan Catering Bintang rasa' }}">
+    <meta property="og:description" content="{{ $store->description ?? 'Pesan catering dengan mudah dan cepat di Bintang Rasa.' }}">
+    <meta property="og:image" content="{{ $store->imageUrl ?? asset('image/store.png') }}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $store->name ?? 'Aplikasi Pemesanan Catering Bintang rasa' }}">
+    <meta name="twitter:description" content="{{ $store->description ?? 'Pesan catering dengan mudah dan cepat di Bintang Rasa.' }}">
+    <meta name="twitter:image" content="{{ $store->imageUrl ?? asset('image/store.png') }}">
+
     <!-- Favicon & App Icons -->
     <link rel="icon" type="image/png" href="{{ $store->imageUrl ?? asset('image/store.png') }}">
     <link rel="apple-touch-icon" href="{{ $store->imageUrl ?? asset('image/store.png') }}">
@@ -42,11 +56,8 @@
         @livewire('components.bottom-navigation')
     @endif
 
-
     @livewire('components.alert')
 
-    
-    
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 

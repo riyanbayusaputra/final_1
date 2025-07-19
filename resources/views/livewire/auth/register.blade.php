@@ -3,10 +3,10 @@
            <!-- Logo & Welcome Text -->
            <div class="text-center mb-8 pt-8">
                 <div class="w-24 h-24 bg-white rounded-full mx-auto flex items-center justify-center mb-6">
-                    <img src="{{ asset('storage/' . $store->image) }}" alt="Logo" class="w-18 h-18">
+                    <img src="{{ $store->image ? asset('storage/'.$store->image) : asset('image/store.png') }}" alt="Logo" class="w-18 h-18">
                 </div>
                 <h1 class="text-2xl font-bold text-gray-800 mb-2">Selamat Datang</h1>
-                <p class="text-gray-500">Silakan login untuk melanjutkan</p>
+                <p class="text-gray-500">Silakan Daftar untuk melanjutkan</p>
             </div>
             
             <!-- Login Form -->
