@@ -25,6 +25,7 @@ class Checkout extends Component
     public $carts = [];
     public $total = 0;
     public $shippingCost = 0;
+    
     public $store;
     public $price_adjustment = 0;
     public $isCustomCatering = false;

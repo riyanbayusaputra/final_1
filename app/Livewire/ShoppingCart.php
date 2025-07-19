@@ -50,10 +50,7 @@ class ShoppingCart extends Component
         ]);
 
         $this->loadCarts();
-        $this->dispatch('showAlert', [
-            'message' => 'keranjang belanja diperbarui',
-            'type' => 'success'
-        ]);
+       
     }
 
     public function decrementQuantity($cartId)
@@ -69,10 +66,7 @@ class ShoppingCart extends Component
         
 
         $this->loadCarts();
-        $this->dispatch('showAlert', [
-            'message' => 'keranjang belanja diperbarui',
-            'type' => 'success'
-        ]);
+       
     }
 
     public function checkout()

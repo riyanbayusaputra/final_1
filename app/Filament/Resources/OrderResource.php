@@ -415,7 +415,7 @@ class OrderResource extends Resource
                 Tables\Filters\SelectFilter::make('status')
                     ->label('Status Pesanan')
                     ->options([
-                        OrderStatusService::STATUS_CHECKING => 'Sedang Dicek',
+                        OrderStatusService::STATUS_CHECKING => 'Menunggu Konfirmasi',
                         OrderStatusService::STATUS_PENDING => 'Menunggu Pembayaran',
                         OrderStatusService::STATUS_PROCESSING => 'Sedang Diproses',
                         OrderStatusService::STATUS_SHIPPED => 'Sedang Dikirim',
