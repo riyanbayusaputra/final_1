@@ -50,10 +50,13 @@
     </div>
 
     <!-- Tombol Simpan Perubahan -->
-    <div class="pt-4 px-4">
-        <button wire:click="updateProfile" class="w-full p-3 border border-gray-300 rounded-lg bg-orange-700 text-white">
-            Simpan Perubahan
-        </button>
-    </div>
+   <div class="px-4 pb-4">
+    <button
+      wire:click="updateProfile"
+      class="w-full py-3 bg-orange-700 text-white font-semibold rounded-lg shadow hover:bg-orange-600 transition"
+    >
+      Simpan Perubahan
+    </button>
+  </div>
     
 </div>

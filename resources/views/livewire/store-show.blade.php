@@ -2,8 +2,8 @@
 <div class="max-w-[480px] mx-auto bg-white min-h-screen relative shadow pb-[40px]">
     <!-- Banner -->
     <div class="h-[180px] relative overflow-hidden bg-gradient-to-br from-primary to-secondary rounded-b-3xl">
-        @if($store->bannerUrl)
-            <img src="{{ $store->bannerUrl }}" alt="Banner" class="w-full h-full object-cover" loading="lazy">
+        @if($store->bannerUrl )
+            <img src="{{ $store->bannerUrl}}" alt="Banner" class="w-full h-full object-cover" loading="lazy">
         @endif
         <div class="absolute inset-0 opacity-50 pattern-dots"></div>
     </div>
@@ -44,7 +44,7 @@
                 <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                     <i class="bi bi-bag-x text-3xl text-primary"></i>
                 </div>
-                <h3 class="text-base font-medium text-gray-900 mb-2">Belum Ada meenu</h3>
+                <h3 class="text-base font-medium text-gray-900 mb-2">Belum Ada menu</h3>
                 <p class="text-gray-500 text-center text-sm">
                     @if($selectedCategory !== 'all')
                         Belum ada menu dalam kategori ini
