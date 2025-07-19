@@ -451,26 +451,26 @@ class OrderResource extends Resource
             // === ACTIONS ===
             ->actions([
                 // Tombol kirim invoice (hanya untuk yang sudah bayar)
-                Tables\Actions\Action::make('kirim_invoice')
-                    ->label('Kirim Invoice')
-                    ->icon('heroicon-o-document-text')
-                    ->color('success')
-                    ->visible(fn ($record) => $record->payment_status == OrderStatusService::PAYMENT_PAID)
-                    ->requiresConfirmation()
-                    ->modalHeading('Kirim Invoice')
-                    ->modalDescription('Invoice akan dikirim ke email customer')
-                    ->modalSubmitActionLabel('Kirim')
-                    ->action(function (Order $record) {
-                        // Kirim invoice via email
-                        $record->user->notify(new \App\Notifications\InvoiceEmail($record));
+                // Tables\Actions\Action::make('kirim_invoice')
+                //     ->label('Kirim Invoice')
+                //     ->icon('heroicon-o-document-text')
+                //     ->color('success')
+                //     ->visible(fn ($record) => $record->payment_status == OrderStatusService::PAYMENT_PAID)
+                //     ->requiresConfirmation()
+                //     ->modalHeading('Kirim Invoice')
+                //     ->modalDescription('Invoice akan dikirim ke email customer')
+                //     ->modalSubmitActionLabel('Kirim')
+                //     ->action(function (Order $record) {
+                //         // Kirim invoice via email
+                //         $record->user->notify(new \App\Notifications\InvoiceEmail($record));
                         
-                        // Tampilkan notifikasi sukses
-                        \Filament\Notifications\Notification::make()
-                            ->title('Invoice Berhasil Dikirim!')
-                            ->body('Invoice telah dikirim ke email customer')
-                            ->success()
-                            ->send();
-                    }),
+                //         // Tampilkan notifikasi sukses
+                //         \Filament\Notifications\Notification::make()
+                //             ->title('Invoice Berhasil Dikirim!')
+                //             ->body('Invoice telah dikirim ke email customer')
+                //             ->success()
+                //             ->send();
+                //     }),
 
                     //remider
                 // Tombol kirim reminder (hanya untuk yang belum bayar)
